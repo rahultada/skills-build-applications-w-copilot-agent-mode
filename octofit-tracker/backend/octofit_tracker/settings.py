@@ -35,6 +35,10 @@ if CODESPACE_NAME:
     ALLOWED_HOSTS.append(f'{CODESPACE_NAME}-8000.app.github.dev')
     ALLOWED_HOSTS.append(f'{CODESPACE_NAME}-3000.app.github.dev')
 
+# Configure proxy headers for codespace
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
