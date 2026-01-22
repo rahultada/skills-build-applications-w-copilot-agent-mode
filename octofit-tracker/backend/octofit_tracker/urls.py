@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
@@ -24,8 +25,23 @@ from .views import (
     LeaderboardViewSet
 )
 
-# Create a router and register viewsets
-router = routers.DefaultRouter()
+# Get the codespace name from environment variable
+CODESPACE_NAME = os.getenv('CODESPACE_NAME', '')
+
+# Create a router and register viewsets with dynamic URL
+class CustomRouter(routers.DefaultRouter):
+    def get_api_root_view(self, api_urls=None):
+        api_root_dict = {}
+        list_name = self.routes[0].name
+        for prefix, viewset, basename in self.registry:
+            api_root_dict[prefix] = list_name.format(basename=basename)
+        
+        class APIRoot(routers.APIRootView):
+            pass
+        
+        return APIRoot.as_view(api_root_dict=api_root_dict)
+
+router = CustomRouter()
 router.register(r'teams', TeamViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'activities', ActivityViewSet)
