@@ -26,22 +26,13 @@ from .views import (
 )
 
 # Get the codespace name from environment variable
+# URL format: https://$CODESPACE_NAME-8000.app.github.dev/api/[component]/
+# The actual URL generation is handled by Django's USE_X_FORWARDED_HOST setting
 CODESPACE_NAME = os.getenv('CODESPACE_NAME', '')
 
-# Create a router and register viewsets with dynamic URL
-class CustomRouter(routers.DefaultRouter):
-    def get_api_root_view(self, api_urls=None):
-        api_root_dict = {}
-        list_name = self.routes[0].name
-        for prefix, viewset, basename in self.registry:
-            api_root_dict[prefix] = list_name.format(basename=basename)
-        
-        class APIRoot(routers.APIRootView):
-            pass
-        
-        return APIRoot.as_view(api_root_dict=api_root_dict)
-
-router = CustomRouter()
+# Create a router and register viewsets
+# URLs will automatically use the codespace domain when accessed through the proxy
+router = routers.DefaultRouter()
 router.register(r'teams', TeamViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'activities', ActivityViewSet)
